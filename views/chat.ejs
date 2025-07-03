@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat - <%= username %></title>
+  <link rel="stylesheet" href="/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <section id="sidebar">
+    <div class="sidebar-header" style="flex-direction: column; align-items: flex-start;">
+      <span class="sidebar-greeting-large">Hello <%= username %></span>
+      <div style="display: flex; width: 100%; align-items: center; margin-top: 8px;">
+        <h4 class="online-users-label">Online Users</h4>
+        <form action="/logout" method="GET" style="display:inline; margin-left:auto;">
+          <button type="submit" class="logout-icon-btn" title="Logout">
+            <span style="font-size:20px; vertical-align:middle;">🚪</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <ul id="users"></ul>
+  </section>
+
+  <section id="chat">
+    <div class="chat-header">
+      <button id="backToUsers" class="back-btn" style="display:none;">←</button>
+      <h3 id="chatTitle">No chat selected</h3>
+      <button id="videoCallBtn" title="Start Video Call" type="button" class="video-call-btn" style="display:none; margin-left:8px;">
+        <span style="font-size:18px;">📹</span>
+      </button>
+    </div>
+    <div id="videoCallModalWindow" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.92); z-index:2000; align-items:center; justify-content:center; flex-direction:column;">
+      <div style="display:flex; flex-direction:column; align-items:center; width:100vw; height:100vh; justify-content:center;">
+        <div style="display:flex; flex-direction:row; gap:32px; align-items:center; justify-content:center; width:100vw; height:70vh;">
+          <video id="remoteVideo" autoplay playsinline style="background:#222; border-radius:16px; width:60vw; max-width:900px; height:60vh; max-height:70vh;"></video>
+          <video id="localVideo" autoplay muted playsinline style="background:#222; border-radius:12px; width:18vw; max-width:240px; height:18vh; max-height:160px; position:absolute; bottom:120px; right:80px; box-shadow:0 2px 16px #0006;"></video>
+        </div>
+        <div id="videoCallControls" style="margin-top:32px; display:flex; gap:32px; align-items:center; justify-content:center;">
+          <button id="muteBtn" style="color:#fff; background:none; border:none; font-size:22px; cursor:pointer;">Mute</button>
+          <button id="rotateCameraBtn" style="color:#fff; background:none; border:none; font-size:22px; cursor:pointer;">🔄</button>
+          <button id="endCallBtn" style="color:#fff; background:#c62828; border:none; font-size:22px; border-radius:8px; padding:12px 32px; cursor:pointer;">End Call</button>
+        </div>
+      </div>
+    </div>
+    <ul id="messages"></ul>
+    <div id="typingIndicator" class="typing" style="display:none;">Typing...</div>
+    <form id="msgForm">
+      <textarea id="msgInput" autocomplete="off" disabled rows="1" maxlength="500" style="resize:none;"></textarea>
+      <button disabled>Send</button>
+    </form>
+  </section>
+
+  <div id="incomingCallModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:32px 24px; border-radius:10px; box-shadow:0 2px 16px #0002; text-align:center; min-width:260px;">
+      <div id="incomingCallText" style="font-size:1.1rem; margin-bottom:18px;">Incoming video call...</div>
+      <button id="acceptCallBtn" style="background:#388e3c; color:#fff; border:none; padding:8px 18px; border-radius:5px; margin-right:10px; cursor:pointer;">Accept</button>
+      <button id="rejectCallBtn" style="background:#c62828; color:#fff; border:none; padding:8px 18px; border-radius:5px; cursor:pointer;">Reject</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" style="display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:16px 32px;border-radius:24px;font-size:1.1rem;z-index:3000;box-shadow:0 2px 16px #0004;transition:opacity 0.3s;opacity:0;pointer-events:none;min-width:180px;text-align:center;"></div>
+
+  <!-- Custom Confirm Modal for Delete -->
+  <div id="confirmModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.32);z-index:4000;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:16px;box-shadow:0 4px 32px #0003;min-width:260px;text-align:center;">
+      <div id="confirmModalMsg" style="font-size:1.1rem;margin-bottom:24px;color:#222;">Are you sure you want to delete this message?</div>
+      <button id="confirmYes" style="background:#c62828;color:#fff;border:none;border-radius:5px;padding:8px 24px;font-size:1rem;cursor:pointer;margin-right:12px;">Delete</button>
+      <button id="confirmNo" style="background:#eee;color:#222;border:none;border-radius:5px;padding:8px 24px;font-size:1rem;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+  <script>
+    const me = "<%= username %>";
+    const socket = io();
+
+    console.log('Socket connected:', socket.connected);
+    socket.on('connect', () => {
+      console.log('Socket connected successfully');
+    });
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    let curRoom = null;
+    let secret = null;
+    let currentChatUser = null;
+    const unreadCounts = new Map();
+    let userList = [];
+    let typingTimeout;
+
+    // --- Video Call Logic ---
+    let localStream = null;
+    let peerConnection = null;
+    const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    const videoCallBtn = document.getElementById('videoCallBtn');
+    const videoCallModalWindow = document.getElementById('videoCallModalWindow');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const endCallBtn = document.getElementById('endCallBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const rotateCameraBtn = document.getElementById('rotateCameraBtn');
+    const videoCallControls = document.getElementById('videoCallControls');
+    let videoCallPeer = null;
+    // Modal elements
+    const incomingCallModal = document.getElementById('incomingCallModal');
+    const incomingCallText = document.getElementById('incomingCallText');
+    const acceptCallBtn = document.getElementById('acceptCallBtn');
+    const rejectCallBtn = document.getElementById('rejectCallBtn');
+    let pendingOffer = null;
+    let pendingCaller = null;
+
+    // Mute/unmute logic
+    let isMuted = false;
+    if (muteBtn) {
+      muteBtn.onclick = () => {
+        if (!localStream) return;
+        localStream.getAudioTracks().forEach(track => {
+          track.enabled = !isMuted;
+        });
+        isMuted = !isMuted;
+        muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
+      };
+    }
+
+    // Camera rotation logic
+    let currentFacingMode = 'user';
+    if (rotateCameraBtn) {
+      rotateCameraBtn.onclick = async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showToast('Camera rotation not supported on this device.', 'error');
+          return;
+        }
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        try {
+          const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: currentFacingMode } },
+            audio: { echoCancellation: true, noiseSuppression: true }
+          });
+          // Replace video track in peer connection
+          const videoTrack = newStream.getVideoTracks()[0];
+          const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+          if (sender && videoTrack) {
+            sender.replaceTrack(videoTrack);
+          }
+          // Update local video
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = newStream;
+          localVideo.srcObject = localStream;
+        } catch (err) {
+          showToast('Unable to switch camera: ' + err.message, 'error');
+        }
+      };
+    }
+
+    socket.emit('login', me);
+    console.log('Login emitted for user:', me);
+
+    // Test if server can receive events
+    socket.emit('test-event', { message: 'Test from client', user: me });
+
+    socket.on('users', names => { userList = names; renderUserList(); });
+
+    function renderUserList() {
+      const ul = document.getElementById('users');
+      ul.innerHTML = '';
+      userList.forEach(n => {
+        if (n === me) return;
+        const li = document.createElement('li');
+        li.textContent = n;
+        if (unreadCounts.get(n)) {
+          const badge = document.createElement('span');
+          badge.className = 'unread-badge';
+          badge.textContent = unreadCounts.get(n);
+          li.appendChild(badge);
+        }
+        if (curRoom?.includes(n)) li.classList.add('active-user');
+        li.onclick = () => {
+          console.log('User clicked:', n);
+          openChatWith(n);
+        };
+        ul.appendChild(li);
+      });
+    }
+
+    // Mobile navigation logic
+    const backToUsersBtn = document.getElementById('backToUsers');
+    let isMobile = window.innerWidth <= 768;
+    
+    // Initialize display state
+    if (isMobile) {
+      // Mobile: Show users list first
+      document.getElementById('sidebar').style.display = 'block';
+      document.getElementById('chat').style.display = 'none';
+    } else {
+      // Desktop: Show both side by side
+      document.getElementById('sidebar').style.display = 'block';
+      document.getElementById('chat').style.display = 'flex';
+    }
+
+    // Handle window resize and orientation changes
+    window.addEventListener('resize', () => {
+      const wasMobile = isMobile;
+      isMobile = window.innerWidth <= 768;
+      
+      // If switching between mobile and desktop
+      if (wasMobile !== isMobile) {
+        if (isMobile && !currentChatUser) {
+          showUsersList();
+        } else if (!isMobile) {
+          document.getElementById('sidebar').style.display = 'block';
+          document.getElementById('chat').style.display = 'flex';
+          backToUsersBtn.style.display = 'none';
+        }
+      }
+    });
+
+    function showUsersList() {
+      document.getElementById('sidebar').style.display = 'block';
+      document.getElementById('chat').style.display = 'none';
+      backToUsersBtn.style.display = 'none';
+      document.getElementById('chatTitle').textContent = 'No chat selected';
+      currentChatUser = null;
+      curRoom = null;
+      // Hide video call button
+      document.getElementById('videoCallBtn').style.display = 'none';
+    }
+
+    function showChatView() {
+      document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('chat').style.display = 'flex';
+      
+      // Ensure input form is visible
+      const msgForm = document.getElementById('msgForm');
+      const msgInput = document.getElementById('msgInput');
+      
+      console.log('showChatView called');
+      console.log('msgForm element:', msgForm);
+      console.log('msgInput element:', msgInput);
+      
+      if (msgForm) {
+        msgForm.style.display = 'flex';
+        msgForm.style.visibility = 'visible';
+        msgForm.style.opacity = '1';
+        msgForm.style.position = 'relative';
+        msgForm.style.bottom = '0';
+        msgForm.style.width = '100%';
+        console.log('Input form styles applied');
+      } else {
+        console.error('msgForm element not found!');
+      }
+      
+      if (isMobile) {
+        backToUsersBtn.style.display = 'block';
+        console.log('Mobile chat view shown, input form should be visible');
+        
+        // Double-check form visibility after a short delay
+        setTimeout(() => {
+          if (msgForm) {
+            msgForm.style.display = 'flex';
+            console.log('Forced input form visibility after timeout');
+          }
+        }, 100);
+      }
+    }
+
+    backToUsersBtn.onclick = () => {
+      showUsersList();
+    };
+
+    function openChatWith(peer) {
+      const room = [me, peer].sort().join('|');
+      if (curRoom === room) return;
+      curRoom = room;
+      currentChatUser = peer;
+      secret = CryptoJS.SHA256(room).toString().slice(0, 32);
+      socket.emit('join-room', { room });
+      unreadCounts.delete(peer);
+      openRoomUI(peer);
+      
+      // Show chat view on mobile
+      if (isMobile) {
+        showChatView();
+      }
+    }
+
+    function openRoomUI(user) {
+      document.getElementById('chatTitle').innerText = `Chat with ${user}`;
+      document.getElementById('msgInput').disabled = false;
+      document.querySelector('#msgForm button').disabled = false;
+      document.getElementById('messages').innerHTML = '';
+      document.getElementById('typingIndicator').style.display = 'none';
+      // Show video call button
+      document.getElementById('videoCallBtn').style.display = 'inline-flex';
+      // Force input form to be visible
+      const msgForm = document.getElementById('msgForm');
+      msgForm.style.display = 'flex';
+      msgForm.style.visibility = 'visible';
+      msgForm.style.opacity = '1';
+      console.log('Chat room opened with user:', user);
+      console.log('Input form display:', msgForm.style.display);
+    }
+
+    // Send message
+    document.getElementById('msgForm').addEventListener('submit', e => {
+      e.preventDefault();
+      if (!curRoom) return;
+      const plain = document.getElementById('msgInput').value.trim();
+      if (!plain) return;
+      const cipher = CryptoJS.AES.encrypt(plain, secret).toString();
+      const now = new Date().toISOString();
+      socket.emit('private-message', { room: curRoom, cipher, from: me });
+      e.target.reset();
+    });
+
+    // Typing indicator: emit on input
+    const msgInput = document.getElementById('msgInput');
+    msgInput.addEventListener('input', () => {
+      if (curRoom) socket.emit('typing', { room: curRoom, from: me });
+    });
+
+    // Show typing when event received
+    socket.on('typing', ({ from }) => {
+      if (currentChatUser !== from) return;
+      const indicator = document.getElementById('typingIndicator');
+      indicator.style.display = 'block';
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => indicator.style.display = 'none', 1500);
+    });
+
+    // Incoming message
+    socket.on('private-message', ({ cipher, from, id, timestamp }) => {
+      const bytes = CryptoJS.AES.decrypt(cipher, secret);
+      const plain = bytes.toString(CryptoJS.enc.Utf8);
+      appendMsg(from === me ? 'me' : 'peer', plain, id, timestamp);
+    });
+
+    // History
+    socket.on('chat-history', history => {
+      document.getElementById('messages').innerHTML = '';
+      history.forEach(({ from, cipher, id, timestamp }) => {
+        const bytes = CryptoJS.AES.decrypt(cipher, secret);
+        const plain = bytes.toString(CryptoJS.enc.Utf8);
+        appendMsg(from === me ? 'me' : 'peer', plain, id, timestamp);
+      });
+    });
+
+    // Notification
+    socket.on('notify-message', ({ from }) => {
+      if (currentChatUser !== from) {
+        unreadCounts.set(from, (unreadCounts.get(from) || 0) + 1);
+        renderUserList();
+      }
+    });
+
+    function appendMsg(sender, msg, messageId, timestamp) {
+      const li = document.createElement('li');
+      li.textContent = (sender === 'me' ? 'You: ' : `${currentChatUser}: `) + msg;
+      li.className = sender;
+      li.dataset.messageId = messageId || '';
+      li.dataset.timestamp = timestamp || '';
+      // Only show delete button for own messages within 1 minute
+      if (sender === 'me' && messageId && timestamp) {
+        const sent = new Date(timestamp);
+        const now = new Date();
+        const age = now - sent;
+        if (age < 60 * 1000) {
+          const delBtn = document.createElement('button');
+          delBtn.textContent = '🗑️';
+          delBtn.title = 'Delete message';
+          delBtn.style.marginLeft = '8px';
+          delBtn.style.background = 'none';
+          delBtn.style.border = 'none';
+          delBtn.style.cursor = 'pointer';
+          delBtn.onclick = () => {
+            showConfirmModal('Are you sure you want to delete this message?', (confirmed) => {
+              if (confirmed) {
+                socket.emit('delete-message', { messageId, from: me });
+                showToast('Message deleted.', 'success');
+              }
+            });
+          };
+          li.appendChild(delBtn);
+          // Remove icon after 1 minute
+          setTimeout(() => {
+            if (delBtn.parentNode) delBtn.remove();
+          }, 60 * 1000 - age);
+        }
+      }
+      const messages = document.getElementById('messages');
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+      document.getElementById('typingIndicator').style.display = 'none';
+    }
+
+    // Check WebRTC support
+    function checkWebRTCSupport() {
+      const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+      const hasRTCPeerConnection = !!window.RTCPeerConnection;
+      const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+      
+      console.log('WebRTC Support Check:');
+      console.log('- getUserMedia:', hasGetUserMedia);
+      console.log('- RTCPeerConnection:', hasRTCPeerConnection);
+      console.log('- Secure connection:', isSecure);
+      
+      if (!hasGetUserMedia || !hasRTCPeerConnection) {
+        videoCallBtn.disabled = true;
+        videoCallBtn.title = 'Video calls not supported in this browser';
+        videoCallBtn.innerHTML = '<span style="font-size:18px;">❌</span>';
+        return false;
+      }
+      
+      if (!isSecure && window.location.hostname !== 'localhost') {
+        videoCallBtn.title = 'Video calls require HTTPS connection';
+        return false;
+      }
+      
+      return true;
+    }
+
+    // Check support on page load
+    checkWebRTCSupport();
+
+    videoCallBtn.onclick = async () => {
+      console.log('Video call button clicked, currentChatUser:', currentChatUser);
+      
+      // Check WebRTC support first
+      if (!checkWebRTCSupport()) {
+        showToast('Video calls are not supported in this browser or require a secure connection (HTTPS).', 'error');
+        return;
+      }
+      
+      if (!currentChatUser) {
+        showToast('Select a user to call!', 'error');
+        return;
+      }
+      if (currentChatUser === me) {
+        showToast('You cannot call yourself!', 'error');
+        return;
+      }
+      videoCallPeer = currentChatUser;
+      console.log('Starting video call with:', videoCallPeer);
+      await startVideoCall(true);
+    };
+
+    endCallBtn.onclick = () => {
+      console.log('Ending video call');
+      endVideoCall();
+      socket.emit('video-end', { to: videoCallPeer, from: me });
+    };
+
+    acceptCallBtn.onclick = async () => {
+      console.log('Accepting video call from:', pendingCaller);
+      incomingCallModal.style.display = 'none';
+      videoCallPeer = pendingCaller;
+      await startVideoCall(false);
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(pendingOffer));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      socket.emit('video-answer', { to: pendingCaller, answer, from: me });
+      videoCallModalWindow.style.display = 'flex';
+      pendingOffer = null;
+      pendingCaller = null;
+    };
+
+    rejectCallBtn.onclick = () => {
+      console.log('Rejecting video call from:', pendingCaller);
+      incomingCallModal.style.display = 'none';
+      socket.emit('video-reject', { to: pendingCaller, from: me });
+      pendingOffer = null;
+      pendingCaller = null;
+    };
+
+    async function startVideoCall(isCaller) {
+      console.log('startVideoCall called, isCaller:', isCaller);
+      try {
+        // Check if WebRTC is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('WebRTC is not supported in this browser. Please use a modern browser with camera/microphone support.');
+        }
+
+        // Check if RTCPeerConnection is supported
+        if (!window.RTCPeerConnection) {
+          throw new Error('WebRTC PeerConnection is not supported in this browser.');
+        }
+
+        if (videoCallModalWindow) videoCallModalWindow.style.display = 'flex';
+        if (videoCallControls) videoCallControls.style.display = 'flex';
+        
+        // Request camera and microphone with better error handling
+        const constraints = {
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user' // Use front camera on mobile
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true
+          }
+        };
+
+        console.log('Requesting media with constraints:', constraints);
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('Media stream obtained successfully');
+        
+        localVideo.srcObject = localStream;
+        peerConnection = new RTCPeerConnection(config);
+        
+        // Add tracks to peer connection
+        localStream.getTracks().forEach(track => {
+          console.log('Adding track to peer connection:', track.kind);
+          peerConnection.addTrack(track, localStream);
+        });
+
+        peerConnection.ontrack = (event) => {
+          console.log('Remote track received:', event.track.kind);
+          remoteVideo.srcObject = event.streams[0];
+          // Ensure remote video is not muted
+          remoteVideo.muted = false;
+          // Debug: log remote stream tracks
+          const remoteStream = event.streams[0];
+          if (remoteStream) {
+            const audioTracks = remoteStream.getAudioTracks();
+            console.log('Remote audio tracks:', audioTracks);
+            if (audioTracks.length === 0) {
+              showToast('No audio track received from remote user. Make sure their microphone is enabled and allowed.', 'error');
+            }
+          }
+        };
+
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('Sending ICE candidate to:', videoCallPeer);
+            socket.emit('ice-candidate', { to: videoCallPeer, candidate: event.candidate, from: me });
+          }
+        };
+
+        peerConnection.oniceconnectionstatechange = () => {
+          console.log('ICE connection state:', peerConnection.iceConnectionState);
+        };
+
+        if (isCaller) {
+          console.log('Creating offer for:', videoCallPeer);
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+          console.log('Sending video-offer to server:', { to: videoCallPeer, offer: offer.type, from: me });
+          socket.emit('video-offer', { to: videoCallPeer, offer, from: me });
+        }
+      } catch (error) {
+        console.error('Error in startVideoCall:', error);
+        
+        // Hide video container if there was an error
+        if (videoCallModalWindow) videoCallModalWindow.style.display = 'none';
+        
+        // Show user-friendly error message
+        let errorMessage = 'Error starting video call: ';
+        
+        if (error.name === 'NotAllowedError') {
+          errorMessage += 'Camera/microphone access was denied. Please allow camera and microphone permissions and try again.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage += 'No camera or microphone found on this device.';
+        } else if (error.name === 'NotSupportedError') {
+          errorMessage += 'This browser does not support video calls. Please use a modern browser like Chrome, Firefox, or Safari.';
+        } else if (error.name === 'SecurityError') {
+          errorMessage += 'Video calls require a secure connection (HTTPS). Please use the secure version of this site.';
+        } else {
+          errorMessage += error.message;
+        }
+        
+        showToast(errorMessage, 'error');
+        
+        // Reset state
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
+        }
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+        }
+      }
+    }
+
+    function endVideoCall() {
+      console.log('endVideoCall called');
+      if (videoCallModalWindow) videoCallModalWindow.style.display = 'none';
+      if (videoCallControls) videoCallControls.style.display = 'none';
+      if (localVideo.srcObject) localVideo.srcObject.getTracks().forEach(t => t.stop());
+      if (remoteVideo.srcObject) remoteVideo.srcObject.getTracks().forEach(t => t.stop());
+      localVideo.srcObject = null;
+      remoteVideo.srcObject = null;
+      if (peerConnection) peerConnection.close();
+      peerConnection = null;
+      localStream = null;
+      videoCallPeer = null;
+    }
+
+    socket.on('video-offer', async ({ offer, from }) => {
+      console.log('Received video offer from:', from);
+      if (from === me) return; // Prevent self-call
+      pendingOffer = offer;
+      pendingCaller = from;
+      incomingCallText.textContent = `Incoming video call from ${from}`;
+      incomingCallModal.style.display = 'flex';
+    });
+
+    socket.on('video-answer', async ({ answer, from }) => {
+      console.log('Received video answer from:', from);
+      if (peerConnection) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      }
+    });
+
+    socket.on('ice-candidate', async ({ candidate, from }) => {
+      console.log('Received ICE candidate from:', from);
+      if (peerConnection && candidate) {
+        try {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (e) { console.error('ICE error', e); }
+      }
+    });
+
+    socket.on('video-end', ({ from }) => {
+      console.log('Video call ended by:', from);
+      if (videoCallPeer === from) endVideoCall();
+    });
+
+    socket.on('video-reject', ({ from }) => {
+      console.log('Video call rejected by:', from);
+      if (videoCallPeer === from) {
+        showToast(`${from} rejected your video call.`, 'error');
+        endVideoCall();
+      }
+    });
+
+    // Listen for message-deleted event
+    socket.on('message-deleted', ({ messageId }) => {
+      const messages = document.getElementById('messages');
+      const li = messages.querySelector(`li[data-message-id="${messageId}"]`);
+      if (li) li.remove();
+    });
+    // --- End Video Call Logic ---
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      let bg = '#323232';
+      if (type === 'error') bg = '#c62828';
+      else if (type === 'success') bg = '#388e3c';
+      else if (type === 'warn') bg = '#ffb300';
+      toast.textContent = message;
+      toast.style.background = bg;
+      toast.style.color = (type === 'warn') ? '#222' : '#fff';
+      toast.style.display = 'block';
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+      }, 3000);
+    }
+
+    // Custom confirm modal logic
+    let confirmCallback = null;
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+    function showConfirmModal(msg, callback) {
+      document.getElementById('confirmModalMsg').textContent = msg;
+      confirmModal.style.display = 'flex';
+      confirmCallback = callback;
+    }
+    confirmYes.onclick = () => {
+      confirmModal.style.display = 'none';
+      if (confirmCallback) confirmCallback(true);
+    };
+    confirmNo.onclick = () => {
+      confirmModal.style.display = 'none';
+      if (confirmCallback) confirmCallback(false);
+    };
+  </script>
+</body>
+</html>

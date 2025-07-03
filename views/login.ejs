@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #e5ddd5;
+    }
+    .auth-box {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+    .auth-box h2 {
+      color: #075e54;
+      text-align: center;
+    }
+    .auth-box form {
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-box input {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .auth-box button {
+      background: #075e54;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .auth-box button:hover {
+      background: #064e45;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <h2>Login</h2>
+    <form action="/login" method="POST">
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div style="color:#c62828; background:#ffeaea; border-radius:5px; padding:8px 12px; margin-bottom:10px; font-size:14px; text-align:center;">
+          <%= error %>
+        </div>
+      <% } %>
+      <button>Login</button>
+    </form>
+    <p style="text-align:center;margin-top:10px;">Don't have an account? <a href="/register">Register</a></p>
+  </div>
+</body>
+</html>

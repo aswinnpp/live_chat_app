@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { background: linear-gradient(135deg, #075e54 0%, #25d366 100%); min-height: 100vh; margin: 0; }
+    .admin-login-card {
+      max-width: 400px;
+      margin: 80px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 32px #0002;
+      padding: 40px 32px 32px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .admin-login-card h2 {
+      margin-bottom: 24px;
+      color: #075e54;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+    .admin-login-card label {
+      font-weight: 500;
+      color: #075e54;
+    }
+    .admin-login-card input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 6px;
+      margin-bottom: 18px;
+      font-size: 1rem;
+    }
+    .admin-login-card button {
+      width: 100%;
+      background: #075e54;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .admin-login-card button:hover {
+      background: #064e45;
+    }
+    @media (max-width: 600px) {
+      .admin-login-card { margin: 32px 8px; padding: 24px 8px; }
+      .admin-login-card h2 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-login-card">
+    <h2>Admin Login</h2>
+    <form action="/admin/login" method="POST">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required autocomplete="username">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div style="color:#c62828; background:#ffeaea; border-radius:5px; padding:8px 12px; margin-bottom:10px; font-size:14px; text-align:center;">
+          <%= error %>
+        </div>
+      <% } %>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+</body>
+</html> 
