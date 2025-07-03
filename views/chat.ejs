@@ -181,7 +181,7 @@
           autocomplete="off"
           disabled
           rows="1"
-          maxlength="500"
+          maxlength="8000"
           style="resize: none"
         ></textarea>
         <button disabled>Send</button>
@@ -367,9 +367,9 @@
           {
             urls: "turn:123.45.67.89:3478",
             username: "testuser",
-            credential: "testpassword"
-          }
-        ]
+            credential: "testpassword",
+          },
+        ],
       };
       const videoCallBtn = document.getElementById("videoCallBtn");
       const videoCallModalWindow = document.getElementById(
@@ -454,16 +454,27 @@
         userList.forEach((n) => {
           if (n === me) return;
           const li = document.createElement("li");
-          li.textContent = n;
+          // Render username as a span
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = n;
+          li.appendChild(nameSpan);
+          // Render unread badge as a separate span
           if (unreadCounts.get(n)) {
             const badge = document.createElement("span");
             badge.className = "unread-badge";
             badge.textContent = unreadCounts.get(n);
+            badge.style.cursor = "pointer";
+            badge.onclick = () => {
+              unreadCounts.delete(n);
+              renderUserList();
+              openChatWith(n);
+            };
             li.appendChild(badge);
           }
           if (curRoom?.includes(n)) li.classList.add("active-user");
           li.onclick = () => {
-            console.log("User clicked:", n);
+            unreadCounts.delete(n);
+            renderUserList();
             openChatWith(n);
           };
           ul.appendChild(li);
@@ -487,9 +498,9 @@
 
       // Handle window resize and orientation changes
       window.addEventListener("resize", () => {
-        const wasMobile = isMobile;
+        
         isMobile = window.innerWidth <= 768;
-
+        const wasMobile = isMobile;
         // If switching between mobile and desktop
         if (wasMobile !== isMobile) {
           if (isMobile && !currentChatUser) {
@@ -530,7 +541,7 @@
           msgForm.style.visibility = "visible";
           msgForm.style.opacity = "1";
           msgForm.style.position = "relative";
-          msgForm.style.bottom = "0";
+          msgForm.style.bottom = "100";
           msgForm.style.width = "100%";
           console.log("Input form styles applied");
         } else {
@@ -855,8 +866,14 @@
               "ICE connection state:",
               peerConnection.iceConnectionState
             );
-            if (peerConnection.iceConnectionState === "failed" || peerConnection.iceConnectionState === "disconnected" || peerConnection.iceConnectionState === "closed") {
-              console.warn("ICE connection failed/disconnected/closed. Remote video may not work across networks or phones.");
+            if (
+              peerConnection.iceConnectionState === "failed" ||
+              peerConnection.iceConnectionState === "disconnected" ||
+              peerConnection.iceConnectionState === "closed"
+            ) {
+              console.warn(
+                "ICE connection failed/disconnected/closed. Remote video may not work across networks or phones."
+              );
             }
           };
 
@@ -1015,6 +1032,19 @@
         confirmModal.style.display = "none";
         if (confirmCallback) confirmCallback(false);
       };
+
+      function saveUnreadCounts() {
+        localStorage.setItem("unreadCounts", JSON.stringify(Array.from(unreadCounts.entries())));
+      }
+
+      function loadUnreadCounts() {
+        const data = localStorage.getItem("unreadCounts");
+        if (data) {
+          const arr = JSON.parse(data);
+          unreadCounts.clear();
+          arr.forEach(([k, v]) => unreadCounts.set(k, v));
+        }
+      }
     </script>
   </body>
 </html>
