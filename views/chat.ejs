@@ -803,7 +803,7 @@
 
           console.log("Requesting media with constraints:", constraints);
           localStream = await navigator.mediaDevices.getUserMedia(constraints);
-          console.log("Media stream obtained successfully");
+          console.log("Media stream obtained successfully", localStream);
 
           localVideo.srcObject = localStream;
           peerConnection = new RTCPeerConnection(config);
@@ -814,23 +814,19 @@
             peerConnection.addTrack(track, localStream);
           });
 
+          // Attach remote stream (modern and legacy)
           peerConnection.ontrack = (event) => {
-            console.log("Remote track received:", event.track.kind);
-            remoteVideo.srcObject = event.streams[0];
-            // Ensure remote video is not muted
-            remoteVideo.muted = false;
-            // Debug: log remote stream tracks
-            const remoteStream = event.streams[0];
-            if (remoteStream) {
-              const audioTracks = remoteStream.getAudioTracks();
-              console.log("Remote audio tracks:", audioTracks);
-              if (audioTracks.length === 0) {
-                showToast(
-                  "No audio track received from remote user. Make sure their microphone is enabled and allowed.",
-                  "error"
-                );
-              }
+            console.log("Remote track received (ontrack):", event.streams[0]);
+            if (event.streams && event.streams[0]) {
+              remoteVideo.srcObject = event.streams[0];
+              remoteVideo.muted = false;
             }
+          };
+          peerConnection.onaddstream = (event) => {
+            // For older browsers
+            console.log("Remote stream received (onaddstream):", event.stream);
+            remoteVideo.srcObject = event.stream;
+            remoteVideo.muted = false;
           };
 
           peerConnection.onicecandidate = (event) => {
