@@ -23,10 +23,4 @@ export const authMiddleware = async (req, res, next) => {
 };
 
 
-export  const  requireAdmin = async (req, res, next) => {
-  if (req.cookies && req.cookies.admin === "1") {
-    const admin = await User.findOne({ email: "aswincp554@gmail.com" });
-    if (admin && admin.role === "admin") return next();
-  }
-  return res.redirect("/admin/login");
-}
+

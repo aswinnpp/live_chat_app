@@ -4,10 +4,10 @@ import User from '../models/Users.js';
 
 const router = express.Router();
 
-// Middleware to protect admin routes
+
 async function requireAdmin(req, res, next) {
   if (req.cookies && req.cookies.admin === '1') {
-    // Double-check user role in DB for extra security
+   
     const admin = await User.findOne({ email: 'aswincp554@gmail.com' });
     if (admin && admin.role === 'admin') return next();
   }

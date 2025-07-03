@@ -2,14 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import { authMiddleware, requireAdmin } from "../middlewares/authMiddleware.js";
-// import {
-//   renderAdminPage,
-//   blockUser,
-//   unblockUser,
-//   showAdminLogin,
-//   adminLogin,
-//   adminLogout,
-// } from "../controllers/adminController.js";
+
 
 import {
   showLogin,
@@ -31,13 +24,6 @@ router.post("/login", loginUser);
 router.get("/chat", authMiddleware, showChat);
 router.get("/logout", logoutUser);
 
-// router.get("/admin/login", showAdminLogin);
-// router.post("/admin/login", adminLogin);
-// router.get("/admin/logout", adminLogout);
 
-// // Admin routes
-// router.get("/admin", requireAdmin, renderAdminPage);
-// router.post("/admin/block/:id", requireAdmin, blockUser);
-// router.post("/admin/unblock/:id", requireAdmin, unblockUser);
 
 export default router;
