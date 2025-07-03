@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 // Render admin page with all users
 export const renderAdminPage = async (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  const users = await User.find();
+  const users = await User.find({role:'user'});
   res.render('admin', { users });
 };
 
@@ -24,16 +24,14 @@ export const unblockUser = async (req, res) => {
 
 // Render admin login page
 export const showAdminLogin = (req, res) => {
-  if (req.cookies && req.cookies.admin === '1') return res.redirect('/admin');
+  if (req.cookies && req.cookies.admin === '1') return res.render('/admin');
   res.render('adminLogin');
 };
 
 // Handle admin login POST
 export const adminLogin = async (req, res) => {
   const { email, password } = req.body;
-  const adminEmail = 'aswincp554@gmail.com';
-  const adminPassword = '@Aswin123';
-  if (email !== adminEmail) return res.status(401).render('adminLogin', { error: 'Invalid admin credentials.' });
+ 
   const admin = await User.findOne({ email });
   if (!admin) return res.status(404).render('adminLogin', { error: 'Admin not found.' });
   if (admin.role !== 'admin') return res.status(403).render('adminLogin', { error: 'You do not have admin privileges.' });

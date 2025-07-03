@@ -7,7 +7,8 @@ dotenv.config();
 export const showLogin = (req, res) => {
   if (req.cookies && req.cookies.admin === '1') return res.redirect('/admin');
   if (req.cookies && req.cookies.token) return res.redirect('/chat');
-  res.render("login");
+  const error = req.query.error === 'blocked' ? 'You have been blocked by the admin.' : undefined;
+  res.render("login", { error });
 };
 export const showRegister = (req, res) => {
   if (req.cookies && req.cookies.token) return res.redirect('/chat');

@@ -1,5 +1,5 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
   display: flex;
@@ -81,7 +81,7 @@ body {
   padding: 10px;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -312,21 +312,21 @@ li.peer {
   body {
     flex-direction: row;
   }
-  
+
   #sidebar {
     width: 100%;
     max-width: 280px;
     height: 100vh;
     display: block;
   }
-  
+
   #chat {
     flex: 1;
     height: 100vh;
     display: flex;
     flex-direction: column;
   }
-  
+
   .chat-header {
     display: flex;
     align-items: center;
@@ -337,7 +337,7 @@ li.peer {
     flex-shrink: 0;
     min-height: 56px;
   }
-  
+
   #chatTitle {
     flex: 1;
     margin: 0;
@@ -348,12 +348,12 @@ li.peer {
     text-overflow: ellipsis;
     background: transparent;
   }
-  
+
   .video-call-btn {
     margin-left: auto;
     margin-right: 16px;
   }
-  
+
   .back-btn {
     order: 0;
   }
@@ -425,7 +425,7 @@ li.peer {
   }
 
   .back-btn:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
   }
 
   #chatTitle {
@@ -519,7 +519,7 @@ li.peer {
     font-size: 14px;
     min-width: 44px;
     min-height: 44px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .sidebar-header {
@@ -673,7 +673,7 @@ video {
 }
 
 /* Improve touch targets for mobile */
-button, 
+button,
 #sidebar li,
 .video-call-btn,
 .logout-btn {
@@ -849,7 +849,7 @@ button,
     font-size: 12px;
     min-width: 32px;
     min-height: 32px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   }
 
   .sidebar-header {
@@ -1032,7 +1032,7 @@ button,
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   pointer-events: none;
   z-index: 1;
 }
@@ -1052,8 +1052,10 @@ button,
   vertical-align: middle;
 }
 .logout-icon-btn:hover {
-  background: rgba(0,0,0,0.08);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 /* Hide the large logout button style if present */
-.logout-btn { display: none !important; }
+.logout-btn {
+  display: none !important;
+}

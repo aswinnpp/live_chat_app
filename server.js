@@ -9,13 +9,14 @@ import { Server as socketIO } from "socket.io";
 import path from "path";
 
 import cookieParser from "cookie-parser";
-import cors from 'cors';
+import cors from "cors";
 
 import userRoute from "./routes/user.js";
+import adminRoute from "./routes/admin.js";
 
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import User from './models/Users.js';
+import User from "./models/Users.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -44,13 +45,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/", userRoute);
+app.use("/admin", adminRoute);
 
 import setupChat from "./sockets/chat.js";
 setupChat(io, online, socketsByName);
 
-(async () => {
-  await User.ensureAdmin();
-})();
 
 server.listen(process.env.PORT, "0.0.0.0", () => {
   console.log(`Chat running at: http://localhost:${process.env.PORT}`);
