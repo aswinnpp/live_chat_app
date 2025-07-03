@@ -449,11 +449,18 @@ li.peer {
   #localVideo {
     width: 80px;
     height: 60px;
+    position: static !important;
+    bottom: auto !important;
+    right: auto !important;
+    margin: 8px 0 0 0 !important;
+    box-shadow: 0 2px 8px #0006;
   }
 
   #remoteVideo {
     width: 120px;
     height: 90px;
+    position: static !important;
+    margin: 0 auto !important;
   }
 
   #endCallBtn {
@@ -477,12 +484,17 @@ li.peer {
 
   #msgForm {
     flex-shrink: 0;
-    position: relative;
+    position: sticky;
     bottom: 0;
     width: 100%;
     box-sizing: border-box;
     z-index: 2;
-    margin-bottom: 8px;
+    margin-bottom: 0 !important;
+    background: #f7f7f7;
+    border-top: 1px solid #ddd;
+    padding: 8px !important;
+    gap: 6px !important;
+    display: flex !important;
   }
 
   #msgInput {
@@ -603,6 +615,8 @@ li.peer {
   #remoteVideo {
     width: 100px;
     height: 75px;
+    position: static !important;
+    margin: 8px 0 0 0 !important;
   }
 
   #messages li {
@@ -632,6 +646,13 @@ li.peer {
   #users li {
     font-size: 12px;
     padding: 7px 8px;
+  }
+
+  #msgForm {
+    margin-bottom: 0 !important;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
   }
 }
 
@@ -761,11 +782,15 @@ button,
   #localVideo {
     width: 60px;
     height: 45px;
+    position: static !important;
+    margin: 4px 0 0 0 !important;
   }
 
   #remoteVideo {
     width: 80px;
     height: 60px;
+    position: static !important;
+    margin: 0 auto !important;
   }
 
   #endCallBtn {
@@ -793,17 +818,9 @@ button,
   }
 
   #msgForm {
-    padding: 5px;
-    gap: 4px;
-    display: flex !important;
-    background: #f7f7f7;
-    border-top: 1px solid #ddd;
-    flex-shrink: 0;
+    margin-bottom: 0 !important;
     position: sticky;
     bottom: 0;
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 50px;
     z-index: 10;
   }
 
