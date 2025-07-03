@@ -47,3 +47,14 @@ export const adminLogout = (req, res) => {
   res.clearCookie('admin');
   res.redirect('/admin/login');
 };
+
+const config = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "openai",
+      credential: "openai"
+    }
+  ]
+};

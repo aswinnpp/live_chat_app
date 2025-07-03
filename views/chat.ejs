@@ -361,7 +361,16 @@
       // --- Video Call Logic ---
       let localStream = null;
       let peerConnection = null;
-      const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+      const config = {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: "turn:123.45.67.89:3478",
+            username: "testuser",
+            credential: "testpassword"
+          }
+        ]
+      };
       const videoCallBtn = document.getElementById("videoCallBtn");
       const videoCallModalWindow = document.getElementById(
         "videoCallModalWindow"
@@ -386,11 +395,12 @@
       if (muteBtn) {
         muteBtn.onclick = () => {
           if (!localStream) return;
+          isMuted = !isMuted;
           localStream.getAudioTracks().forEach((track) => {
             track.enabled = !isMuted;
           });
-          isMuted = !isMuted;
           muteBtn.textContent = isMuted ? "Unmute" : "Mute";
+          console.log("Mute toggled. isMuted:", isMuted);
         };
       }
 
@@ -845,6 +855,9 @@
               "ICE connection state:",
               peerConnection.iceConnectionState
             );
+            if (peerConnection.iceConnectionState === "failed" || peerConnection.iceConnectionState === "disconnected" || peerConnection.iceConnectionState === "closed") {
+              console.warn("ICE connection failed/disconnected/closed. Remote video may not work across networks or phones.");
+            }
           };
 
           if (isCaller) {
