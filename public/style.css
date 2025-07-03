@@ -292,7 +292,7 @@ li.peer {
 
 .online-users-label {
   font-size: 1rem;
-  color: #e3e6e6;
+  color: #075e54;
   font-weight: 500;
   margin: 0;
   letter-spacing: 0.2px;
@@ -383,12 +383,18 @@ li.peer {
     padding-right: 0 !important;
   }
   #msgForm {
-    width: 100vw;
-    max-width: 100vw;
-    box-sizing: border-box;
-    margin: 0 !important;
+    display: flex !important;
+    position: fixed !important;
     left: 0 !important;
-    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 8px 8px 8px 8px !important;
+    background: #f7f7f7 !important;
+    z-index: 9999 !important;
+    border-top: 1px solid #ddd !important;
   }
   body {
     flex-direction: column;
@@ -407,15 +413,11 @@ li.peer {
   }
 
   #chat {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    min-height: 0 !important;
-    position: relative !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    box-sizing: border-box !important;
-    overflow-x: hidden !important;
+    height: 100vh;
+    min-height: 0;
+    flex-direction: column;
+    display: flex;
+    position: relative;
   }
 
   /* Force input form to be visible in mobile */
@@ -507,13 +509,10 @@ li.peer {
   }
 
   #messages {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    margin-bottom: 0 !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin-bottom: 0;
   }
 
   #messages li {
@@ -523,20 +522,18 @@ li.peer {
   }
 
   #msgForm {
-    display: flex !important;
-    position: sticky !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    box-sizing: border-box !important;
-    margin: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 100 !important;
-    background: #f7f7f7 !important;
-    border-top: 1px solid #ddd !important;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 2;
+    margin-bottom: 0 !important;
+    background: #f7f7f7;
+    border-top: 1px solid #ddd;
     padding: 8px !important;
     gap: 6px !important;
+    display: flex !important;
   }
 
   #msgInput {
@@ -639,12 +636,18 @@ li.peer {
     padding-right: 0 !important;
   }
   #msgForm {
-    width: 100vw;
-    max-width: 100vw;
-    box-sizing: border-box;
-    margin: 0 !important;
+    display: flex !important;
+    position: fixed !important;
     left: 0 !important;
-    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 8px 8px 8px 8px !important;
+    background: #f7f7f7 !important;
+    z-index: 9999 !important;
+    border-top: 1px solid #ddd !important;
   }
   .top-right-buttons {
     top: 10px;
