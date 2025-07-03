@@ -89,6 +89,8 @@ export default function (io, online, socketsByName) {
       }
     });
 
+    // jjjj
+
     // Handle message deletion
     socket.on('delete-message', async ({ messageId, from }) => {
       const msg = await Message.findById(messageId);
