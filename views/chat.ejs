@@ -478,103 +478,113 @@
         renderUserList();
       });
 
-   function renderUserList() {
-  const ul = document.getElementById("users");
-  ul.innerHTML = "";
+      function renderUserList() {
+        const ul = document.getElementById("users");
+        ul.innerHTML = "";
 
-  userList.forEach((n) => {
-    if (n === me) return;
+        userList.forEach((n) => {
+          if (n === me) return;
 
-    const li = document.createElement("li");
-    li.style.display = "flex";
-    li.style.alignItems = "center";
-    li.style.gap = "10px";
-    li.style.padding = "12px 16px";
-    li.style.minHeight = "52px";
-    li.style.cursor = "pointer";
-    li.style.borderBottom = "1px solid #eee";
+          const li = document.createElement("li");
+          li.style.display = "flex";
+          li.style.alignItems = "center";
+          li.style.gap = "10px";
+          li.style.padding = "12px 16px";
+          li.style.minHeight = "52px";
+          li.style.cursor = "pointer";
+          li.style.borderBottom = "1px solid #eee";
 
-    // Avatar bubble with user's first letter
-    const avatar = document.createElement("div");
-    avatar.textContent = n.charAt(0).toUpperCase();
+          // Avatar bubble with user's first letter
+          const avatar = document.createElement("div");
+          avatar.textContent = n.charAt(0).toUpperCase();
 
-    avatar.className = "avatar-bubble";
+          avatar.className = "avatar-bubble";
 
-    avatar.style.width = "36px";
-    avatar.style.height = "36px";
-    avatar.style.backgroundColor = "#25D366"; // WhatsApp green
-    avatar.style.color = "white";
-    avatar.style.fontWeight = "bold";
-    avatar.style.borderRadius = "50%";
-    avatar.style.display = "flex";
-    avatar.style.alignItems = "center";
-    avatar.style.justifyContent = "center";
-    avatar.style.fontSize = "16px";
-    li.appendChild(avatar);
+          avatar.style.width = "36px";
+          avatar.style.height = "36px";
+          avatar.style.backgroundColor = getRandomColor(); // WhatsApp green
+          avatar.style.color = "white";
+          avatar.style.fontWeight = "bold";
+          avatar.style.borderRadius = "50%";
+          avatar.style.display = "flex";
+          avatar.style.alignItems = "center";
+          avatar.style.justifyContent = "center";
+          avatar.style.fontSize = "16px";
+          li.appendChild(avatar);
 
-   
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = n;
-    nameSpan.style.flex = "1"; 
-    li.appendChild(nameSpan);
 
-  
-    if (unreadCounts.get(n)) {
-      const badge = document.createElement("span");
-      badge.className = "unread-badge";
+            function getRandomColor() {
+          const colors = [
+            "#e57373",
+            "#64b5f6",
+            "#81c784",
+            "#ffd54f",
+            "#4db6ac",
+            "#ba68c8",
+            "#ff8a65",
+            "#90a4ae",
+            "#f06292",
+            "#a1887f",
+          ];
+          return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
 
-      badge.textContent = unreadCounts.get(n);
-      badge.style.backgroundColor = "red";
-      badge.style.color = "white";
-      badge.style.borderRadius = "12px";
-      badge.style.padding = "2px 6px";
-      badge.style.fontSize = "12px";
-      badge.style.marginLeft = "auto";
-      badge.style.cursor = "pointer";
-      badge.onclick = (e) => {
-        e.stopPropagation(); 
-        unreadCounts.delete(n);
-        renderUserList();
-        openChatWith(n);
-      };
-      li.appendChild(badge);
-    }
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = n;
+          nameSpan.style.flex = "1";
+          li.appendChild(nameSpan);
 
-    
-    if (curRoom?.includes(n)) {
-      li.classList.add("active-user");
-    }
+          if (unreadCounts.get(n)) {
+            const badge = document.createElement("span");
+            badge.className = "unread-badge";
 
-    li.onclick = () => {
-      unreadCounts.delete(n);
-      renderUserList();
-      openChatWith(n);
-    };
+            badge.textContent = unreadCounts.get(n);
+            badge.style.backgroundColor = "red";
+            badge.style.color = "white";
+            badge.style.borderRadius = "12px";
+            badge.style.padding = "2px 6px";
+            badge.style.fontSize = "12px";
+            badge.style.marginLeft = "auto";
+            badge.style.cursor = "pointer";
+            badge.onclick = (e) => {
+              e.stopPropagation();
+              unreadCounts.delete(n);
+              renderUserList();
+              openChatWith(n);
+            };
+            li.appendChild(badge);
+          }
 
-    ul.appendChild(li);
-  });
-}
+          if (curRoom?.includes(n)) {
+            li.classList.add("active-user");
+          }
 
-      
+          li.onclick = () => {
+            unreadCounts.delete(n);
+            renderUserList();
+            openChatWith(n);
+          };
+
+          ul.appendChild(li);
+        });
+      }
+
       const backToUsersBtn = document.getElementById("backToUsers");
       let isMobile = window.innerWidth <= 768;
 
-      
       if (isMobile) {
-        
         document.getElementById("sidebar").style.display = "block";
         document.getElementById("chat").style.display = "none";
       } else {
-       
         document.getElementById("sidebar").style.display = "block";
         document.getElementById("chat").style.display = "flex";
       }
 
-      
       window.addEventListener("resize", () => {
         isMobile = window.innerWidth <= 768;
         const wasMobile = isMobile;
-        
+
         if (wasMobile !== isMobile) {
           if (isMobile && !currentChatUser) {
             showUsersList();
@@ -593,7 +603,7 @@
         document.getElementById("chatTitle").textContent = "No chat selected";
         currentChatUser = null;
         curRoom = null;
-        
+
         document.getElementById("videoCallBtn").style.display = "none";
       }
 
@@ -624,7 +634,6 @@
           backToUsersBtn.style.display = "block";
           console.log("Mobile chat view shown, input form should be visible");
 
-          
           setTimeout(() => {
             if (msgForm) {
               msgForm.style.display = "flex";
@@ -648,21 +657,67 @@
         unreadCounts.delete(peer);
         openRoomUI(peer);
 
-       
         if (isMobile) {
           showChatView();
         }
       }
 
       function openRoomUI(user) {
-        document.getElementById("chatTitle").innerText = `Chat with ${user}`;
+        const titleContainer = document.getElementById("chatTitle");
+        titleContainer.innerHTML = ""; // Clear old content
+
+        const avatar = document.createElement("div");
+        avatar.textContent = user.charAt(0).toUpperCase();
+        avatar.style.width = "36px";
+        avatar.style.height = "36px";
+        avatar.style.borderRadius = "50%";
+        avatar.style.display = "flex";
+        avatar.style.alignItems = "center";
+        avatar.style.justifyContent = "center";
+        avatar.style.color = "white";
+        avatar.style.fontWeight = "bold";
+        avatar.style.fontSize = "16px";
+        avatar.style.marginRight = "10px";
+        avatar.style.backgroundColor = getRandomColor(); // Random background
+
+        
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = user;
+        nameSpan.style.fontSize = "16px";
+        nameSpan.style.fontWeight = "500";
+
+      
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "center";
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(nameSpan);
+
+        titleContainer.appendChild(wrapper);
+
+        function getRandomColor() {
+          const colors = [
+            "#e57373",
+            "#64b5f6",
+            "#81c784",
+            "#ffd54f",
+            "#4db6ac",
+            "#ba68c8",
+            "#ff8a65",
+            "#90a4ae",
+            "#f06292",
+            "#a1887f",
+          ];
+          return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
         document.getElementById("msgInput").disabled = false;
         document.querySelector("#msgForm button").disabled = false;
         document.getElementById("messages").innerHTML = "";
         document.getElementById("typingIndicator").style.display = "none";
-        
+
         document.getElementById("videoCallBtn").style.display = "inline-flex";
-        
+
         const msgForm = document.getElementById("msgForm");
         msgForm.style.display = "flex";
         msgForm.style.visibility = "visible";
@@ -671,7 +726,6 @@
         console.log("Input form display:", msgForm.style.display);
       }
 
-     
       document.getElementById("msgForm").addEventListener("submit", (e) => {
         e.preventDefault();
         if (!curRoom) return;
@@ -683,7 +737,6 @@
         e.target.reset();
       });
 
-      
       const msgInput = document.getElementById("msgInput");
       msgInput.addEventListener("input", () => {
         if (curRoom) socket.emit("typing", { room: curRoom, from: me });
@@ -700,14 +753,12 @@
         );
       });
 
-      
       socket.on("private-message", ({ cipher, from, id, timestamp }) => {
         const bytes = CryptoJS.AES.decrypt(cipher, secret);
         const plain = bytes.toString(CryptoJS.enc.Utf8);
         appendMsg(from === me ? "me" : "peer", plain, id, timestamp);
       });
 
-    
       socket.on("chat-history", (history) => {
         document.getElementById("messages").innerHTML = "";
         history.forEach(({ from, cipher, id, timestamp }) => {
@@ -717,7 +768,6 @@
         });
       });
 
-      
       socket.on("notify-message", ({ from }) => {
         if (currentChatUser !== from) {
           unreadCounts.set(from, (unreadCounts.get(from) || 0) + 1);
@@ -732,7 +782,7 @@
         li.className = sender;
         li.dataset.messageId = messageId || "";
         li.dataset.timestamp = timestamp || "";
-        
+
         if (sender === "me" && messageId && timestamp) {
           const sent = new Date(timestamp);
           const now = new Date();
