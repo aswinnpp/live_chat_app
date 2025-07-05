@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Chat - <%= username %></title>
+    <title>Onlexia</title>
+    <link rel="icon" type="image/png" href="/images/logo3.png">
     <link rel="stylesheet" href="/style.css" />
     <link
       rel="stylesheet"
@@ -23,7 +24,11 @@
         class="sidebar-header"
         style="flex-direction: column; align-items: flex-start"
       >
-        <span class="sidebar-greeting-large">Hello <%= username %></span>
+        <span class="sidebar-greeting-large">
+          <img src="/images/logo2.png" alt="AC Logo" style="height: 40px" />
+          <%= username %>
+        </span>
+
         <div
           style="
             display: flex;
@@ -493,6 +498,7 @@
           li.style.minHeight = "52px";
           li.style.cursor = "pointer";
           li.style.borderBottom = "1px solid #eee";
+          
 
           // Avatar bubble with user's first letter
           const avatar = document.createElement("div");
@@ -512,23 +518,21 @@
           avatar.style.fontSize = "16px";
           li.appendChild(avatar);
 
-
-            function getRandomColor() {
-          const colors = [
-            "#e57373",
-            "#64b5f6",
-            "#81c784",
-            "#ffd54f",
-            "#4db6ac",
-            "#ba68c8",
-            "#ff8a65",
-            "#90a4ae",
-            "#f06292",
-            "#a1887f",
-          ];
-          return colors[Math.floor(Math.random() * colors.length)];
-        }
-        
+          function getRandomColor() {
+            const colors = [
+              "#e57373",
+              "#64b5f6",
+              "#81c784",
+              "#ffd54f",
+              "#4db6ac",
+              "#ba68c8",
+              "#ff8a65",
+              "#90a4ae",
+              "#f06292",
+              "#a1887f",
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+          }
 
           const nameSpan = document.createElement("span");
           nameSpan.textContent = n;
@@ -680,13 +684,11 @@
         avatar.style.marginRight = "10px";
         avatar.style.backgroundColor = getRandomColor(); // Random background
 
-        
         const nameSpan = document.createElement("span");
         nameSpan.textContent = user;
         nameSpan.style.fontSize = "16px";
         nameSpan.style.fontWeight = "500";
 
-      
         const wrapper = document.createElement("div");
         wrapper.style.display = "flex";
         wrapper.style.alignItems = "center";
@@ -710,7 +712,7 @@
           ];
           return colors[Math.floor(Math.random() * colors.length)];
         }
-        
+
         document.getElementById("msgInput").disabled = false;
         document.querySelector("#msgForm button").disabled = false;
         document.getElementById("messages").innerHTML = "";
