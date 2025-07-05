@@ -17,6 +17,7 @@ body::before {
   opacity: 0.08;
   pointer-events: none;
   z-index: 0;
+  overflow: hidden
 }
 
 #sidebar {
@@ -358,6 +359,7 @@ li.me, .video-call-btn, .logout-btn, .sidebar-header, .sidebar-greeting, .sideba
 @media (min-width: 769px) {
   body {
     flex-direction: row;
+    overflow: hidden
   }
 
   #sidebar {
@@ -759,6 +761,7 @@ li.me, .video-call-btn, .logout-btn, .sidebar-header, .sidebar-greeting, .sideba
 @media (max-width: 768px) and (orientation: landscape) {
   body {
     flex-direction: row;
+    overflow: hidden
   }
 
   #sidebar {
