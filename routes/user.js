@@ -11,6 +11,7 @@ import {
   loginUser,
   showChat,
   logoutUser,
+  showOtpForm, verifyOtp, resendOtp
 } from "../controllers/userController.js";
 
 router.get("/", (req, res) => res.redirect("/login"));
@@ -23,7 +24,9 @@ router.post("/login", loginUser);
 
 router.get("/chat", authMiddleware, showChat);
 router.get("/logout", logoutUser);
-
+router.get("/verify-otp", showOtpForm);
+router.post("/verify-otp", verifyOtp);
+router.post("/resend-otp", resendOtp);
 
 
 export default router;

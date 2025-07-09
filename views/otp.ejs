@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OTP Verification</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #e5ddd5;
+    }
+    .auth-box {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+    .auth-box h2 {
+      color: #075e54;
+      text-align: center;
+    }
+    .auth-box form {
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-box input {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .auth-box button {
+      background: #075e54;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .auth-box button:hover {
+      background: #064e45;
+    }
+    .auth-box .btn-link {
+      background: none;
+      color: #075e54;
+      text-decoration: underline;
+      padding: 0;
+      font-size: 15px;
+      width: auto;
+      margin: 0 auto 0 0;
+      display: block;
+      border: none;
+      box-shadow: none;
+    }
+    .error {
+      color: #c62828;
+      background: #ffeaea;
+      border-radius: 5px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .timer {
+      text-align: center;
+      font-size: 16px;
+      color: #075e54;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .expired {
+      color: #c62828;
+      text-align: center;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <h2>OTP Verification</h2>
+    <div id="timer" class="timer">01:00</div>
+    <div id="expiredMsg" class="expired" style="display:none;">OTP expired. Please request a new one.</div>
+    <form id="otpForm" action="/verify-otp" method="POST">
+      <input type="hidden" name="email" value="<%= email %>">
+      <label for="otp">Enter OTP sent to your email:</label>
+      <input type="text" id="otp" name="otp" required>
+      <% if (error) { %>
+        <div class="error"><%= error %></div>
+      <% } %>
+      <button type="submit" id="verifyBtn">Verify OTP</button>
+    </form>
+    <form action="/resend-otp" method="POST">
+      <input type="hidden" name="email" value="<%= email %>">
+      <button type="submit" class="btn-link">Resend OTP</button>
+    </form>
+  </div>
+  <script>
+    let timeLeft = 60;
+    const timerEl = document.getElementById('timer');
+    const expiredMsg = document.getElementById('expiredMsg');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const otpForm = document.getElementById('otpForm');
+    const interval = setInterval(() => {
+      timeLeft--;
+      const min = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const sec = String(timeLeft % 60).padStart(2, '0');
+      timerEl.textContent = `${min}:${sec}`;
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        timerEl.style.display = 'none';
+        expiredMsg.style.display = 'block';
+        verifyBtn.disabled = true;
+        verifyBtn.style.background = '#ccc';
+        verifyBtn.style.cursor = 'not-allowed';
+        otpForm.onsubmit = () => false;
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
