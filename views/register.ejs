@@ -50,9 +50,14 @@
 <body>
   <div class="auth-box">
     <h2>Register</h2>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div style="color:#c62828; background:#ffeaea; border-radius:5px; padding:8px 12px; margin-bottom:10px; font-size:14px; text-align:center;">
+        <%= error %>
+      </div>
+    <% } %>
     <form action="/register" method="POST">
-      <input name="username" placeholder="Username" required />
-      <input name="email" type="email" placeholder="Email" required />
+      <input name="username" placeholder="Username" required value="<%= typeof username !== 'undefined' ? username : '' %>" />
+      <input name="email" type="email" placeholder="Email" required value="<%= typeof email !== 'undefined' ? email : '' %>" />
       <input name="password" type="password" placeholder="Password" required />
       <div class="form-group">
         <small>You will receive an OTP email after registering.</small>

@@ -28,7 +28,15 @@ export const showRegister = (req, res) => {
 export const registerUser = async (req, res) => {
   const { email, username, password } = req.body;
   const existing = await User.findOne({ email });
-  if (existing) return res.send("User already exists. Please login.");
+  if (existing) {
+    if (existing.isVerified) {
+      // User exists and is verified
+      return res.status(400).render('register', { error: 'User already exists. Please login.', email, username });
+    } else {
+      // User exists but not verified
+      return res.redirect(`/verify-otp?email=${encodeURIComponent(email)}&error=Please verify your account with the OTP sent to your email.`);
+    }
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   // Generate 6-digit OTP
