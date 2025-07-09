@@ -14,11 +14,11 @@ async function requireAdmin(req, res, next) {
   return res.redirect('/admin/login');
 }
 
-// Admin login routes
+
 router.get('/login', showAdminLogin);
 router.post('/login', adminLogin);
 
-// Admin panel routes
+
 router.get('/', requireAdmin, renderAdminPage);
 router.post('/block/:id', requireAdmin, blockUser);
 router.post('/unblock/:id', requireAdmin, unblockUser);

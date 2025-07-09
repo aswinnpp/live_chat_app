@@ -20,6 +20,7 @@ export const showLogin = (req, res) => {
   const error = req.query.error === 'blocked' ? 'You have been blocked by the admin.' : undefined;
   res.render("login", { error });
 };
+
 export const showRegister = (req, res) => {
   if (req.cookies && req.cookies.token) return res.redirect('/chat');
   res.render("register");
