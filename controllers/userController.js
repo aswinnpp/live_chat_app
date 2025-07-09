@@ -27,6 +27,15 @@ export const showRegister = (req, res) => {
 
 export const registerUser = async (req, res) => {
   const { email, username, password } = req.body;
+  // Password strength check
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).render('register', {
+      error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.',
+      email,
+      username
+    });
+  }
   const existing = await User.findOne({ email });
   if (existing) {
     if (existing.isVerified) {
